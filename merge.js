@@ -2,10 +2,10 @@ const Subtitle = require('subtitle');
 
 function merge(srtPrimary, srtSecondary, attrs, noString) {
   if (typeof srtPrimary === 'string') {
-    srtPrimary = Subtitle.parse(srtPrimary);
+    srtPrimary = srtPrimary !== '' ? Subtitle.parse(srtPrimary) : [];
   }
   if (typeof srtSecondary === 'string') {
-    srtSecondary = Subtitle.parse(srtSecondary);
+    srtSecondary = srtSecondary !== '' ? Subtitle.parse(srtSecondary) : [];
   }
   if (typeof srtPrimary !== 'object' || typeof srtSecondary !== 'object') {
     throw new Error('cannot parse srt file');
