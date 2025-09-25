@@ -1,17 +1,12 @@
-#!/usr/bin/node
+#!/usr/bin/env deno --allow-env --allow-read --allow-write
 
-const fs = require('fs');
-const readLine = require('readline');
-const path = require('path');
-const rl = readLine.createInterface({
-  input: process.stdin,
-  output: process.stdout
-});
-const SrtMerge = require('../merge');
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { createInterface } from 'node:readline';
+import { merge } from '../merge.js';
 
 if(process.argv.length < 3 || process.argv[2] === '--help' || process.argv[2] === '-h') {
   console.log('Usage:');
-  console.log('  ' + path.basename(__filename) + ' <srtFilepath 1> [<srtFilepath 2>] [<one-attr>] [-o [-f(force)] <outputFilepath>]');
+  console.log('  srt-merge.js <srtFilepath 1> [<srtFilepath 2>] [<one-attr>] [-o [-f(force)] <outputFilepath>]');
   console.log('Description:');
   console.log('  Srt 2 will be processed by given attributes and merged into Srt 1.');
   console.log('Attributes available:');
@@ -27,13 +22,13 @@ let argv = process.argv.slice(2);
 argv.reverse();
 const files = [argv.pop(), argv.pop()];
 // if second argument is not a existing file, take it as attribute input
-if(!fs.existsSync(files[1])) {
+if(!existsSync(files[1])) {
     argv.push(files[1]);
     files[1] = files[0];
     files[0] = '';
 }
 // read files
-let srts = files.map(file => file.trim().length > 0 ? fs.readFileSync(file, 'utf-8') : '');
+let srts = files.map(file => file.trim().length > 0 ? readFileSync(file, 'utf-8') : '');
 
 let attr = undefined;
 if(argv[argv.length - 1][0] !== '-') {
@@ -48,29 +43,27 @@ if(argv[argv.length - 1] === '-o' || argv[argv.length - 1] === '-of' || argv[arg
   output = argv.pop();
 }
 
-let result = SrtMerge.merge(srts[0], srts[1], attr);
+let result = merge(srts[0], srts[1], attr);
 if(output) {
-  if(fs.existsSync(output)) {
-    if (force) {
-      fs.writeFileSync(output, result);
-      console.log('Successfully written.');
-      process.exit(0);
-    } else {
-      rl.question('File \'' + output + '\' already exists, overwrite? [y/N] ', answer => {
-        answer = answer.toLowerCase();
-        if (answer[0] === 'y') {
-          fs.writeFileSync(output, result);
-          console.log('Successfully written.')
-        } else {
-          console.log('Abort.')
-        }
-        process.exit(0);
-      });
-    }
-  } else {
-    fs.writeFileSync(output, result);
+  if(force || !existsSync(output)) {
+    writeFileSync(output, result);
     console.log('Successfully written.');
     process.exit(0);
+  } else {
+    const rl = createInterface({
+      input: process.stdin,
+      output: process.stdout
+    });
+    rl.question('File \'' + output + '\' already exists, overwrite? [y/N] ', answer => {
+      answer = answer.toLowerCase();
+      if (answer[0] === 'y') {
+        writeFileSync(output, result);
+        console.log('Successfully written.')
+      } else {
+        console.log('Abort.')
+      }
+      process.exit(0);
+    });
   }
 } else {
   console.log(result);

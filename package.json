@@ -3,9 +3,10 @@
   "version": "1.1.0",
   "description": "merge two srt files into one.",
   "main": "merge.js",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "echo '#!/usr/bin/node' > build/srt-merge.js; browserify scripts/merge-script.js --bare >> build/srt-merge.js; chmod 755 build/srt-merge.js;"
+    "build": "deno bundle scripts/merge-script.js -o build/srt-merge.js && chmod 755 build/srt-merge.js"
   },
   "author": "",
   "license": "ISC",

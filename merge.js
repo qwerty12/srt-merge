@@ -1,11 +1,11 @@
-const Subtitle = require('subtitle');
+import { parse, resync, stringify } from 'subtitle';
 
-function merge(srtPrimary, srtSecondary, attrs, noString) {
+export function merge(srtPrimary, srtSecondary, attrs, noString) {
   if (typeof srtPrimary === 'string') {
-    srtPrimary = srtPrimary !== '' ? Subtitle.parse(srtPrimary) : [];
+    srtPrimary = srtPrimary !== '' ? parse(srtPrimary) : [];
   }
   if (typeof srtSecondary === 'string') {
-    srtSecondary = srtSecondary !== '' ? Subtitle.parse(srtSecondary) : [];
+    srtSecondary = srtSecondary !== '' ? parse(srtSecondary) : [];
   }
   if (typeof srtPrimary !== 'object' || typeof srtSecondary !== 'object') {
     throw new Error('cannot parse srt file');
@@ -61,7 +61,7 @@ function merge(srtPrimary, srtSecondary, attrs, noString) {
         }).filter(caption => (caption !== undefined));
       } else if (/^move-[-]?[0-9]+$/.test(attr)) {
         const delay = parseInt(attr.substring(attr.lastIndexOf('e-') + 2));
-        srtSecondary = Subtitle.resync(srtSecondary, delay);
+        srtSecondary = resync(srtSecondary, delay);
       } else if (attr !== undefined && attr !== 'simple' && attr !== '') {
         throw new Error('Cannot parse attr');
       }
@@ -71,7 +71,7 @@ function merge(srtPrimary, srtSecondary, attrs, noString) {
   srt3.sort((caption1, caption2) => {
     return caption1.start - caption2.start;
   });
-  return noString ? srt3 : Subtitle.stringify(srt3);
+  return noString ? srt3 : stringify(srt3);
 }
 
 function clearPosition(srt) {
@@ -103,7 +103,3 @@ function binarySearch(value, array, comp) {
   }
   return left - 1;
 }
-
-module.exports = {
-  merge
-};
